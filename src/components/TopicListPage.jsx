@@ -1,13 +1,15 @@
 // src/components/TopicListPage.jsx
 import React, { useState } from 'react';
-import { PlusCircle, Trash2, BookOpen } from 'lucide-react';
+import { PlusCircle, Trash, BookOpen, Tags } from 'lucide-react';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
+import CategoryFilter from './CategoryFilter';
 
-const TopicListPage = ({ topics, onSelectTopic, onAddTopic, onDeleteTopic }) => {
+const TopicListPage = ({ topics , allTopicCounts, categoryCounts, activeFilter, onSelectTopic, onAddTopic, onDeleteTopic , onSetFilter, onClearFilter}) => {
   const [newTopicName, setNewTopicName] = useState('');
   const [newTopicCategory, setNewTopicCategory] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [isFilterVisible, setIsFilterVisible] = useState(false)
 
   const handleAddTopic = (e) => {
     e.preventDefault();
@@ -27,6 +29,12 @@ const TopicListPage = ({ topics, onSelectTopic, onAddTopic, onDeleteTopic }) => 
         <h1 className="text-4xl font-bold text-white">Neetuno</h1>
         {!isAdding && <Button onClick={() => setIsAdding(true)}><PlusCircle size={16} className="me-2" />Tambah Topik</Button>}
       </div>
+
+      <div className='flex justify-between items-center mb-8 '>
+        <h3 className='text-lg font-light text-gray-400'>List Topik</h3>
+        <Button onClick={() => setIsFilterVisible(!isFilterVisible)}><Tags size={15} className="me-2"/>{isFilterVisible ? 'Sembunyikan Tag' : 'Tampilkan Tag'}</Button>
+      </div>
+
       {isAdding && (
         <form onSubmit={handleAddTopic} className="bg-gray-800 p-6 rounded-xl mb-8 shadow-lg">
           <h2 className="text-2xl font-semibold text-white mb-4">Topik Baru</h2>
@@ -37,6 +45,23 @@ const TopicListPage = ({ topics, onSelectTopic, onAddTopic, onDeleteTopic }) => 
           <div className="flex gap-4"><Button type="submit">Tambah</Button><Button onClick={() => setIsAdding(false)} variant="secondary">Batal</Button></div>
         </form>
       )}
+
+      {isFilterVisible && (
+        <CategoryFilter 
+          categoryCounts={categoryCounts}
+          onSetFilter={onSetFilter}
+          activeFilter={activeFilter}
+          onClearFilter={onClearFilter}
+          
+        />
+      )}
+
+      <div className='mb-4 font-bold'>
+        {activeFilter && (
+          <h5>Kategori: {activeFilter}</h5>
+        )}
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {topics.length > 0 ? (
           topics.map(topic => (
@@ -44,7 +69,7 @@ const TopicListPage = ({ topics, onSelectTopic, onAddTopic, onDeleteTopic }) => 
               <div>
                 <div className="flex justify-between items-start mb-2">
                   <Badge color={getProgressBadgeColor(topic.progress)}>{topic.progress}</Badge>
-                  <Button onClick={(e) => { e.stopPropagation(); onDeleteTopic(topic.id); }} variant="danger" className="p-2 h-8 w-8 !rounded-full opacity-50 hover:opacity-100"><Trash2 size={14} /></Button>
+                  <Button onClick={(e) => { e.stopPropagation(); onDeleteTopic(topic.id); }} variant="danger" className="p-2 !rounded-full opacity-50 hover:opacity-100"><Trash/></Button>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">{topic.name}</h3>
                 <p className="text-sm text-gray-400">{topic.category}</p>

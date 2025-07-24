@@ -1,30 +1,48 @@
-// src/App.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { db } from './firebase-config';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-// import useLocalStorageState from './hooks/useLocalStorageState';
 import TopicListPage from './components/TopicListPage';
 import TopicDetailPage from './components/TopicDetailPage';
+import WelcomePage from './components/WelcomePage';
 
 export default function App() {
   const [topics, setTopics] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
   // const [apiKey, setApiKey] = useLocalStorageState('geminiApiKey', '');
-  const [currentPage, setCurrentPage] = useState('list');
+  const [currentPage, setCurrentPage] = useState('welcome');
   const [selectedTopicId, setSelectedTopicId] = useState(null);
 
   const topicsCollectionRef = collection(db, "topics");
 
+  const [categoryFilter, setCategoryFilter] = useState(null)
+
   useEffect(() => {
     const getTopics = async () => {
-      setIsLoading(true);
+      // setIsLoading(true);
       const data = await getDocs(topicsCollectionRef);
       const loadedTopics = data.docs.map(doc => ({ ...doc.data(), id: doc.id }));
       setTopics(loadedTopics);
-      setIsLoading(false);
+      // setIsLoading(false);
     };
     getTopics();
   }, []);
+
+  // Count category
+  const categoryCounts = useMemo(()=> {
+    return topics.reduce((acc, topic) => {
+      const category = topic.category || 'Random'
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    }, {})
+  }, [topics])
+
+  // filter category logic
+  const filteredTopics = useMemo(() => {
+    if(!categoryFilter){
+      return topics;
+    }
+    return topics.filter((topic) => topic.category === categoryFilter)
+  }, [topics, categoryFilter])
 
   const handleAddTopic = async (newTopicData) => {
     const { id, ...dataToSend } = newTopicData;
@@ -50,19 +68,27 @@ export default function App() {
     setCurrentPage('detail');
   };
 
-  if (isLoading) {
-    return <div className="bg-gray-900 text-white min-h-screen flex items-center justify-center">Memuat data dari Firebase...</div>;
-  }
+  // if (isLoading) {
+  //   return <div className="bg-gray-900 text-white min-h-screen flex items-center justify-center">Memuat data dari Firebase...</div>;
+  // }
 
   return (
     <div className="bg-gray-900 text-gray-100 min-h-screen font-sans p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
+        {currentPage === 'welcome' && (
+        <WelcomePage onStart={() => setCurrentPage('list')}/>
+        )}
         {currentPage === 'list' && (
           <TopicListPage
-            topics={topics}
+            topics={filteredTopics}
+            allTopicCounts={topics.length}
+            categoryCounts = {categoryCounts}
+            activeFilter = {categoryFilter}
             onSelectTopic={handleSelectTopic}
             onAddTopic={handleAddTopic}
             onDeleteTopic={handleDeleteTopic}
+            onSetFilter={setCategoryFilter}
+            onClearFilter={() => setCategoryFilter(null)}
           />
         )}
         {currentPage === 'detail' && selectedTopicId && (

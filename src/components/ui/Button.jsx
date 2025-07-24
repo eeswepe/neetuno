@@ -1,4 +1,3 @@
-// src/components/ui/Button.jsx
 import React from 'react';
 
 const Button = ({ onClick, children, variant = 'primary', className = '', disabled = false, type = 'button' }) => {

@@ -1,4 +1,3 @@
-// src/components/ui/Badge.jsx
 import React from 'react';
 
 const Badge = ({ children, color }) => {
