@@ -93,6 +93,9 @@ function AppContent() {
   return (
     <div className="bg-gray-900 text-gray-100 min-h-screen font-sans p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
+        {/* {currentPage === 'welcome' && ( */}
+        {/*   <WelcomePage onStart={() => setCurrentPage('list')} /> */}
+        {/* )} */}
         {currentPage === 'list' && (
           <TopicListPage
             topics={filteredTopics}
